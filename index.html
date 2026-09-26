@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brawl Log</title>
+  <meta name="description" content="Brawl-Stars-Spiele eintragen und pro Tag oder gesamt auswerten.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Zum Inhalt</a>
+
+  <header class="top">
+    <a class="brand" href="#tag" aria-label="Brawl Log, zur Tagesansicht">
+      <span class="brand-mark" aria-hidden="true">★</span>
+      <span class="brand-name">BRAWL<span class="slash">/</span>LOG</span>
+    </a>
+    <span class="save-status" id="save-status" role="status" data-state="saving">Lädt …</span>
+    <nav class="tabs" aria-label="Bereiche">
+      <a href="#tag" data-tab="tag">Tag</a>
+      <a href="#gesamt" data-tab="gesamt">Gesamt</a>
+      <a href="#neu" data-tab="neu" class="tab-new">+ Spiel</a>
+      <a href="#import" data-tab="import">Import</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div class="storage-warning" id="storage-warning" role="alert" hidden>
+      <strong>Achtung: Spiele werden nicht in einer Datei gespeichert.</strong>
+      <span>Die Seite läuft ohne Server, deshalb liegen deine Spiele nur in diesem Browser. Starte sie im Ordner <code>brawl-log</code> mit <code>npm start</code> und öffne <code>http://localhost:5173</code>. Dann landet alles in <code>data/games.json</code>.</span>
+    </div>
+    <!-- ================= TAG ================= -->
+    <section id="view-tag" class="view" aria-labelledby="day-title">
+      <div class="day-nav">
+        <button type="button" class="icon-btn" id="day-prev" aria-label="Vorheriger Spieltag">‹</button>
+        <div class="day-label">
+          <p class="eyebrow" id="day-eyebrow">Heute</p>
+          <h1 id="day-title">–</h1>
+        </div>
+        <button type="button" class="icon-btn" id="day-next" aria-label="Nächster Spieltag">›</button>
+        <div class="day-tools">
+          <input type="date" id="day-picker" aria-label="Datum auswählen">
+          <button type="button" class="btn btn-sm" id="day-today">Heute</button>
+        </div>
+      </div>
+
+      <div class="empty" id="day-empty" hidden>
+        <p class="empty-title">Keine Spiele an diesem Tag.</p>
+        <div class="empty-actions">
+          <a class="btn btn-accent" href="#neu" id="day-empty-add">Spiel eintragen</a>
+          <button type="button" class="btn" id="day-empty-last" hidden></button>
+        </div>
+      </div>
+
+      <div id="day-content">
+        <div class="day-hero">
+          <div class="record">
+            <div class="ring" id="day-ring"></div>
+            <div class="record-nums">
+              <p class="score"><span class="w" id="day-w">0</span><span class="dash">:</span><span class="l" id="day-l">0</span></p>
+              <p class="score-label">Siege : Niederlagen</p>
+              <p class="score-open" id="day-open"></p>
+            </div>
+          </div>
+          <dl class="stat-grid" id="day-stats"></dl>
+        </div>
+
+        <section class="panel" aria-labelledby="h-guide">
+          <header class="panel-head">
+            <h2 id="h-guide">Spielverlauf</h2>
+            <p class="hint">erstes Spiel links</p>
+          </header>
+          <ol class="guide" id="day-guide"></ol>
+        </section>
+
+        <section aria-labelledby="h-games">
+          <header class="panel-head">
+            <h2 id="h-games">Spiele</h2>
+            <p class="hint" id="day-games-count"></p>
+          </header>
+          <ol class="games" id="day-games"></ol>
+        </section>
+      </div>
+    </section>
+
+    <!-- ================= GESAMT ================= -->
+    <section id="view-gesamt" class="view" aria-labelledby="h-gesamt" hidden>
+      <div class="view-head">
+        <p class="eyebrow">All-Time</p>
+        <h1 id="h-gesamt">Gesamt</h1>
+      </div>
+
+      <div class="empty" id="all-empty" hidden>
+        <p class="empty-title">Noch keine Spiele eingetragen.</p>
+        <a class="btn btn-accent" href="#neu">Erstes Spiel eintragen</a>
+      </div>
+
+      <div id="all-content">
+        <div class="day-hero">
+          <div class="record">
+            <div class="ring" id="all-ring"></div>
+            <div class="record-nums">
+              <p class="score"><span class="w" id="all-w">0</span><span class="dash">:</span><span class="l" id="all-l">0</span></p>
+              <p class="score-label">Siege : Niederlagen</p>
+              <p class="score-open" id="all-open"></p>
+            </div>
+          </div>
+          <dl class="stat-grid" id="all-stats"></dl>
+        </div>
+
+        <section class="panel" aria-labelledby="h-days">
+          <header class="panel-head">
+            <h2 id="h-days">Spieltage</h2>
+            <p class="hint">Tag antippen für Details</p>
+          </header>
+          <div class="table-wrap"><table class="table" id="days-table"></table></div>
+        </section>
+
+        <section class="panel" aria-labelledby="h-brawler">
+          <header class="panel-head">
+            <h2 id="h-brawler">Brawler</h2>
+            <p class="hint">nach Spielen sortiert</p>
+          </header>
+          <div class="table-wrap"><table class="table" id="brawler-table"></table></div>
+        </section>
+
+        <section class="panel" aria-labelledby="h-modes">
+          <header class="panel-head">
+            <h2 id="h-modes">Modi</h2>
+          </header>
+          <div class="table-wrap"><table class="table" id="mode-table"></table></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ================= NEU ================= -->
+    <section id="view-neu" class="view" aria-labelledby="h-neu" hidden>
+      <div class="view-head">
+        <p class="eyebrow" id="form-eyebrow">Neues Spiel</p>
+        <h1 id="h-neu">Spiel eintragen</h1>
+      </div>
+
+      <form id="game-form" class="form" novalidate>
+        <div class="panel">
+          <p class="step"><span>1</span> Allgemein</p>
+          <div class="row">
+            <label class="field">
+              <span>Brawler</span>
+              <input id="f-brawler" list="brawler-list" autocomplete="off" placeholder="z. B. Edgar">
+            </label>
+            <label class="field">
+              <span>Modus *</span>
+              <input id="f-mode" list="mode-list" autocomplete="off" required placeholder="z. B. Brawlball">
+              <small class="err" data-for="f-mode"></small>
+            </label>
+            <label class="field">
+              <span>Datum</span>
+              <input id="f-date" type="date">
+            </label>
+          </div>
+        </div>
+
+        <div class="panel">
+          <p class="step"><span>2</span> Runden</p>
+          <div class="seg" role="radiogroup" aria-label="Anzahl Runden" id="round-count">
+            <button type="button" role="radio" data-count="1">1 Runde</button>
+            <button type="button" role="radio" data-count="2">2 Runden</button>
+            <button type="button" role="radio" data-count="3">3 Runden</button>
+          </div>
+          <div class="round-cards" id="rounds"></div>
+        </div>
+
+        <div class="panel">
+          <p class="step"><span>3</span> Ergebnis &amp; Stats</p>
+          <div class="field">
+            <span>Spiel-Ergebnis</span>
+            <div class="seg seg-result" role="radiogroup" aria-label="Spiel-Ergebnis" id="result-seg">
+              <button type="button" role="radio" data-result="W" class="is-w">Sieg</button>
+              <button type="button" role="radio" data-result="L" class="is-l">Niederlage</button>
+              <button type="button" role="radio" data-result="">Offen</button>
+            </div>
+            <small class="hint-inline" id="result-hint">Wird aus den Runden berechnet, du kannst es aber ändern.</small>
+          </div>
+          <div class="row">
+            <label class="field">
+              <span>Kills</span>
+              <input id="f-kills" type="number" min="0" inputmode="numeric" placeholder="optional">
+              <small class="err" data-for="f-kills"></small>
+            </label>
+            <label class="field">
+              <span>Schaden</span>
+              <input id="f-damage" type="text" inputmode="numeric" placeholder="z. B. 45.000">
+              <small class="err" data-for="f-damage"></small>
+            </label>
+            <label class="check">
+              <input id="f-approx" type="checkbox">
+              <span>Schaden nur ungefähr (ca.)</span>
+            </label>
+          </div>
+          <details class="more">
+            <summary>Mehr Felder</summary>
+            <div class="row">
+              <label class="field">
+                <span>Tode gesamt</span>
+                <input id="f-deaths" type="number" min="0" inputmode="numeric" placeholder="leer = Summe der Runden">
+                <small class="err" data-for="f-deaths"></small>
+              </label>
+              <label class="field field-wide">
+                <span>Notiz</span>
+                <input id="f-note" type="text" placeholder="optional">
+              </label>
+            </div>
+          </details>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-accent btn-lg" id="submit-btn">Spiel speichern</button>
+          <button type="button" class="btn btn-ghost" id="cancel-edit" hidden>Abbrechen</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ================= IMPORT ================= -->
+    <section id="view-import" class="view" aria-labelledby="h-import" hidden>
+      <div class="view-head">
+        <p class="eyebrow">Aus deinen Notizen</p>
+        <h1 id="h-import">Import</h1>
+      </div>
+
+      <div class="panel">
+        <header class="panel-head">
+          <h2>Text einfügen</h2>
+          <p class="hint">Blöcke mit ----- trennen · max. 3 Runden pro Spiel</p>
+        </header>
+        <label class="field">
+          <span>Datum der Spiele</span>
+          <input id="import-date" type="date">
+        </label>
+        <label class="field">
+          <span>Notizen</span>
+          <textarea id="import-text" rows="11" placeholder="Brawler: Edgar&#10;Brawlball 1 Runde: 2 Mal gestorben! W&#10;Brawlball 2 Runde: 1 Mal gestorben! L&#10;Brawlball 3 Runde: 0 Mal gestorben! W&#10;Kills 13; Deaths: 12&#10;Schaden: ca. 130.000&#10;-----------------------------------------------&#10;Brawler: Brock&#10;..."></textarea>
+        </label>
+        <p class="hint-inline">Sieg/Niederlage pro Runde: „W“, „L“, „Sieg“ oder „Niederlage“ ans Zeilenende schreiben.</p>
+        <div class="form-actions">
+          <button type="button" class="btn" id="parse-btn">Vorschau</button>
+          <button type="button" class="btn btn-accent" id="import-btn" disabled>Übernehmen</button>
+        </div>
+        <div id="import-preview" class="preview" aria-live="polite"></div>
+      </div>
+
+      <div class="panel panel-danger">
+        <header class="panel-head">
+          <h2>Alles löschen</h2>
+          <p class="hint" id="storage-hint">Daten liegen nur in diesem Browser</p>
+        </header>
+        <button type="button" class="btn btn-danger" id="wipe-btn">Alle Spiele löschen</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <datalist id="brawler-list"></datalist>
+  <datalist id="mode-list"></datalist>
+
+  <script src="app.js"></script>
+</body>
+</html>

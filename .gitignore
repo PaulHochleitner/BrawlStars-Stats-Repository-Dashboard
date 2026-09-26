@@ -1,0 +1,5 @@
+# Runtime data written by server.js (personal game stats)
+data/
+
+node_modules/
+*.tmp
