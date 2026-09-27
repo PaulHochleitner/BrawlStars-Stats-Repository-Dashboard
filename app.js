@@ -106,9 +106,12 @@ Schaden: ca: 130.000`;
 
   function gameDeaths(g) {
     if (typeof g.deathsTotal === "number") return g.deathsTotal;
-    return g.rounds.reduce((s, r) => s + (typeof r.deaths === "number" ? r.deaths : 0), 0);
+    // Older games and text imports may still carry deaths per round.
+    const known = g.rounds.filter((r) => typeof r.deaths === "number");
+    return known.length ? known.reduce((s, r) => s + r.deaths, 0) : null;
   }
-  const deathsPartial = (g) => typeof g.deathsTotal !== "number" && g.rounds.some((r) => r.deaths === null);
+  const deathsPartial = (g) => typeof g.deathsTotal !== "number"
+    && g.rounds.some((r) => r.deaths === null) && g.rounds.some((r) => typeof r.deaths === "number");
 
   function summarize(list) {
     const s = { games: list.length, w: 0, l: 0, open: 0, kills: 0, deaths: 0, damage: 0, rounds: 0 };
@@ -116,7 +119,7 @@ Schaden: ca: 130.000`;
       const r = gameResult(g);
       if (r === "W") s.w++; else if (r === "L") s.l++; else s.open++;
       s.kills += g.kills || 0;
-      s.deaths += gameDeaths(g);
+      s.deaths += gameDeaths(g) || 0;
       s.damage += g.damage || 0;
       s.rounds += g.rounds.length;
     }
@@ -437,13 +440,13 @@ Schaden: ca: 130.000`;
             ${g.rounds.map((rd, i) => `
               <li class="pip">
                 <span class="badge ${cls(rd.result)}" aria-label="${RESULT_TEXT[rd.result] || "offen"}">${letter(rd.result)}</span>
-                <span class="pip-text"><b>RUNDE ${i + 1}</b>${rd.deaths === null ? "? Tode" : `${rd.deaths} ${rd.deaths === 1 ? "Tod" : "Tode"}`}</span>
+                <span class="pip-text"><b>RUNDE ${i + 1}</b>${RESULT_TEXT[rd.result] || "offen"}</span>
               </li>`).join("")}
           </ol>
           <dl class="game-stats">
             <div><dt>Kills</dt><dd>${g.kills === null ? "–" : nf.format(g.kills)}</dd></div>
-            <div><dt>Tode</dt><dd>${nf.format(deaths)}${deathsPartial(g) ? "+" : ""}</dd></div>
-            <div><dt>K/D</dt><dd>${g.kills === null ? "–" : kd(g.kills, deaths)}</dd></div>
+            <div><dt>Tode</dt><dd>${deaths === null ? "–" : nf.format(deaths) + (deathsPartial(g) ? "+" : "")}</dd></div>
+            <div><dt>K/D</dt><dd>${g.kills === null || deaths === null ? "–" : kd(g.kills, deaths)}</dd></div>
             <div><dt>Schaden</dt><dd>${g.damage === null ? "–" : (g.damageApprox ? "ca. " : "") + nf.format(g.damage)}</dd></div>
           </dl>
           ${g.note ? `<p class="game-note">${esc(g.note)}</p>` : ""}
@@ -571,13 +574,13 @@ Schaden: ca: 130.000`;
       .map(([name, list]) => ({ name, s: summarize(list) }))
       .sort((a, b) => b.s.games - a.s.games);
     $("#mode-table").innerHTML = `
-      <thead><tr><th>Modus</th><th class="num">Spiele</th><th>S : N</th><th>Winrate</th><th class="num">Ø Tode / Runde</th><th class="num">K/D</th></tr></thead>
+      <thead><tr><th>Modus</th><th class="num">Spiele</th><th>S : N</th><th>Winrate</th><th class="num">Ø Tode / Spiel</th><th class="num">K/D</th></tr></thead>
       <tbody>${modes.map(({ name, s }) => `<tr>
         <td class="name">${esc(name)}</td>
         <td class="num">${s.games}</td>
         <td>${recCell(s)}</td>
         <td>${winrateCell(s)}</td>
-        <td class="num">${s.rounds ? nf1.format(s.deaths / s.rounds) : "–"}</td>
+        <td class="num">${s.games ? nf1.format(s.deaths / s.games) : "–"}</td>
         <td class="num">${kd(s.kills, s.deaths)}</td>
       </tr>`).join("")}</tbody>`;
 
@@ -604,13 +607,6 @@ Schaden: ca: 130.000`;
           <button type="button" data-v="W" aria-pressed="${r.result === "W"}">W</button>
           <button type="button" data-v="L" aria-pressed="${r.result === "L"}">L</button>
         </div>
-        <span class="deaths-label" id="dl-${i}">Tode</span>
-        <div class="stepper">
-          <button type="button" data-step="-1" aria-label="Tode in Runde ${i + 1} verringern" ${r.deaths === null ? "disabled" : ""}>−</button>
-          <input type="number" min="0" inputmode="numeric" aria-labelledby="dl-${i}" value="${r.deaths ?? ""}" ${r.deaths === null ? "disabled" : ""}>
-          <button type="button" data-step="1" aria-label="Tode in Runde ${i + 1} erhöhen" ${r.deaths === null ? "disabled" : ""}>+</button>
-        </div>
-        <label class="unknown"><input type="checkbox" ${r.deaths === null ? "checked" : ""}> weiß ich nicht mehr</label>
       </div>`).join("");
   }
 
@@ -625,7 +621,7 @@ Schaden: ca: 130.000`;
     editingId = null;
     $("#game-form").reset();
     $("#f-date").value = date || today();
-    formRounds = [{ result: null, deaths: 0 }, { result: null, deaths: 0 }];
+    formRounds = [{ result: null, deaths: null }, { result: null, deaths: null }];
     formResult = null;
     resultManual = false;
     renderRoundCards();
@@ -653,9 +649,9 @@ Schaden: ca: 130.000`;
     $("#f-kills").value = g.kills ?? "";
     $("#f-damage").value = g.damage === null ? "" : nf.format(g.damage).replace(/\s/g, ".");
     $("#f-approx").checked = g.damageApprox;
-    $("#f-deaths").value = g.deathsTotal ?? "";
+    $("#f-deaths").value = gameDeaths(g) ?? "";
     $("#f-note").value = g.note;
-    $(".more").open = g.deathsTotal !== null || !!g.note;
+    $(".more").open = !!g.note;
     $("#form-eyebrow").textContent = `${g.brawler || "Ohne Brawler"} · ${g.mode}`;
     $("#h-neu").textContent = "Spiel bearbeiten";
     $("#submit-btn").textContent = "Änderungen speichern";
@@ -736,43 +732,20 @@ Schaden: ca: 130.000`;
       const b = ev.target.closest("[data-count]");
       if (!b) return;
       const n = Number(b.dataset.count);
-      while (formRounds.length < n) formRounds.push({ result: null, deaths: 0 });
+      while (formRounds.length < n) formRounds.push({ result: null, deaths: null });
       formRounds.length = n;
       renderRoundCards();
       syncResultFromRounds();
     });
 
-    const rounds = $("#rounds");
-    rounds.addEventListener("click", (ev) => {
+    $("#rounds").addEventListener("click", (ev) => {
       const card = ev.target.closest(".round-card");
-      if (!card) return;
-      const r = formRounds[Number(card.dataset.i)];
       const wl = ev.target.closest(".wl button");
-      if (wl) {
-        r.result = r.result === wl.dataset.v ? null : wl.dataset.v;
-        $$(".wl button", card).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === r.result)));
-        syncResultFromRounds();
-        return;
-      }
-      const step = ev.target.closest("[data-step]");
-      if (step && r.deaths !== null) {
-        r.deaths = Math.max(0, (r.deaths || 0) + Number(step.dataset.step));
-        $("input[type=number]", card).value = r.deaths;
-      }
-    });
-    rounds.addEventListener("input", (ev) => {
-      const card = ev.target.closest(".round-card");
-      if (!card || ev.target.type !== "number") return;
-      const n = parseInt(ev.target.value, 10);
-      formRounds[Number(card.dataset.i)].deaths = Number.isFinite(n) && n >= 0 ? n : 0;
-    });
-    rounds.addEventListener("change", (ev) => {
-      const card = ev.target.closest(".round-card");
-      if (!card || ev.target.type !== "checkbox") return;
+      if (!card || !wl) return;
       const r = formRounds[Number(card.dataset.i)];
-      r.deaths = ev.target.checked ? null : 0;
-      renderRoundCards();
-      $(`.round-card[data-i="${card.dataset.i}"] input[type=checkbox]`).focus();
+      r.result = r.result === wl.dataset.v ? null : wl.dataset.v;
+      $$(".wl button", card).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === r.result)));
+      syncResultFromRounds();
     });
 
     $("#result-seg").addEventListener("click", (ev) => {

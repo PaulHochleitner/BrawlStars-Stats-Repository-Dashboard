@@ -303,6 +303,7 @@ textarea { font-size: 13px; resize: vertical; }
 .check { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; margin-top: 30px; }
 .check input { width: 20px; height: 20px; accent-color: var(--ink); flex: none; }
 @media (max-width: 760px) { .check { margin: 0 0 14px; } }
+.check-inline { margin: -4px 0 14px; }
 
 .seg { display: inline-flex; border: var(--line); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; max-width: 100%; }
 .seg button {
@@ -320,7 +321,7 @@ textarea { font-size: 13px; resize: vertical; }
 @media (max-width: 760px) { .round-cards { grid-template-columns: 1fr; } }
 .round-card { border: var(--line); border-radius: var(--radius); background: var(--paper); padding: 12px; animation: pop 240ms var(--out) both; }
 .round-card h3 { font-size: 18px; margin-bottom: 10px; }
-.wl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.wl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .wl button {
   font-family: var(--display); font-size: 22px; padding: 8px 0; cursor: pointer;
   border-radius: var(--radius); background: transparent; border: 2px solid var(--faint); color: var(--soft);
@@ -329,15 +330,6 @@ textarea { font-size: 13px; resize: vertical; }
 .wl button:active { transform: scale(0.96); }
 .wl button[data-v="W"][aria-pressed="true"] { background: var(--win); border-color: var(--win); color: #fff; }
 .wl button[data-v="L"][aria-pressed="true"] { background: var(--loss-soft); border: 3px solid var(--loss); color: var(--loss); }
-.deaths-label { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; margin-bottom: 6px; display: block; }
-.stepper { display: grid; grid-template-columns: 40px 1fr 40px; gap: 6px; }
-.stepper button { border: var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); font-family: var(--display); font-size: 20px; cursor: pointer; }
-.stepper button:disabled { opacity: 0.3; cursor: not-allowed; }
-.stepper input { text-align: center; font-weight: 800; padding: 8px 4px; -moz-appearance: textfield; }
-.stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.stepper input:disabled { opacity: 0.4; }
-.unknown { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 8px; cursor: pointer; color: var(--soft); }
-.unknown input { width: 16px; height: 16px; accent-color: var(--ink); }
 
 .more { border-top: 1px solid var(--faint); padding-top: 12px; margin-top: 4px; }
 .more summary { cursor: pointer; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; margin-bottom: 12px; color: var(--soft); }

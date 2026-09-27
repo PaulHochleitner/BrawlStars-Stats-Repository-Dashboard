@@ -191,28 +191,26 @@
               <small class="err" data-for="f-kills"></small>
             </label>
             <label class="field">
+              <span>Tode</span>
+              <input id="f-deaths" type="number" min="0" inputmode="numeric" placeholder="optional">
+              <small class="err" data-for="f-deaths"></small>
+            </label>
+            <label class="field">
               <span>Schaden</span>
               <input id="f-damage" type="text" inputmode="numeric" placeholder="z. B. 45.000">
               <small class="err" data-for="f-damage"></small>
             </label>
-            <label class="check">
-              <input id="f-approx" type="checkbox">
-              <span>Schaden nur ungefähr (ca.)</span>
-            </label>
           </div>
+          <label class="check check-inline">
+            <input id="f-approx" type="checkbox">
+            <span>Schaden nur ungefähr (ca.)</span>
+          </label>
           <details class="more">
-            <summary>Mehr Felder</summary>
-            <div class="row">
-              <label class="field">
-                <span>Tode gesamt</span>
-                <input id="f-deaths" type="number" min="0" inputmode="numeric" placeholder="leer = Summe der Runden">
-                <small class="err" data-for="f-deaths"></small>
-              </label>
-              <label class="field field-wide">
-                <span>Notiz</span>
-                <input id="f-note" type="text" placeholder="optional">
-              </label>
-            </div>
+            <summary>Notiz</summary>
+            <label class="field">
+              <span>Notiz</span>
+              <input id="f-note" type="text" placeholder="optional">
+            </label>
           </details>
         </div>
 

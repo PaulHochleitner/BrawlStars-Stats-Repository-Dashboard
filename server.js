@@ -8,7 +8,7 @@ const path = require("path");
 
 const PORT = Number(process.env.PORT) || 5173;
 const ROOT = __dirname;
-const DATA_DIR = path.join(ROOT, "data");
+const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(ROOT, "data");
 const DATA_FILE = path.join(DATA_DIR, "games.json");
 const BACKUP_FILE = path.join(DATA_DIR, "games.backup.json");
 const MAX_BODY = 5 * 1024 * 1024;
